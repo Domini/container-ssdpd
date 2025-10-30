@@ -1,0 +1,30 @@
+ARG SSDP_RESPONDER_VERSION_AMD64
+ARG SSDP_RESPONDER_VERSION_ARM64
+
+FROM docker.io/opensuse/tumbleweed
+ARG TARGETPLATFORM
+ARG SSDP_RESPONDER_VERSION_AMD64
+ARG SSDP_RESPONDER_VERSION_ARM64
+
+RUN zypper --non-interactive refresh \
+ && case "$TARGETPLATFORM" in \
+      "linux/amd64") \
+        SSDP_RESPONDER_VERSION="$SSDP_RESPONDER_VERSION_AMD64" \
+        ;; \
+      "linux/arm64") \
+        SSDP_RESPONDER_VERSION="$SSDP_RESPONDER_VERSION_ARM64" \
+        ;; \
+    esac \
+ && zypper --non-interactive install --no-recommends -y \
+      "ssdp-responder-$SSDP_RESPONDER_VERSION" \
+ && zypper --non-interactive clean \
+ && rm -rf /var/log/{lastlog,tallylog,zypper.log,zypp/history,YaST2} \
+ && useradd --create-home ssdp
+
+USER ssdp
+WORKDIR /home/ssdp
+
+ENV SSDPD_DESCRIPTION_XML_URL=''
+ENV SSDPD_NOTIFY_INTERVAL=300
+
+CMD exec /usr/sbin/ssdpd -d "$SSDPD_DESCRIPTION_XML_URL" -i "$SSDPD_NOTIFY_INTERVAL" -n -w
