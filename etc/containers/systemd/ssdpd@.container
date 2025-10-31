@@ -1,0 +1,10 @@
+[Container]
+AutoUpdate=registry
+ContainerName=ssdpd-%i
+Image=ghcr.io/domini/ssdpd:latest
+Mount=type=tmpfs,target=/var/lib/misc,chown,tmpfs-mode=1755
+Pull=newer
+ReadOnly=true
+
+[Service]
+Restart=always
